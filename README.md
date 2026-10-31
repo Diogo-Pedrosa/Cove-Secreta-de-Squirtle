@@ -12,9 +12,17 @@ python -m http.server 8000
 Depois abra http://localhost:8000 no navegador. É necessário usar o servidor
 para carregar os módulos JavaScript e os arquivos dos shaders.
 
-Por enquanto, a cena tem um chão circular com cor de areia e uma câmera fixa
-inclinada, usando perspectiva, e um moinho d'água no centro. A roda e as pás
-giram no eixo X. Ainda não há texturas nem controles de câmera.
+Por enquanto, a cena tem um chão circular com cor de areia, uma câmera aérea
+com perspectiva e um moinho d'água no centro. A roda e as pás giram no eixo X.
+Ainda não há texturas.
+
+Controles da câmera:
+
+- Arrastar com o botão esquerdo: girar ao redor do moinho e mudar a inclinação.
+- Rodinha do mouse: aproximar e afastar.
+
+O mouse usa o deslocamento em pixels. A distância fica entre 8 e 55 e a inclinação não passa por baixo
+do chão nem vira a câmera de cabeça para baixo.
 
 Arquivos:
 
@@ -24,14 +32,22 @@ Arquivos:
 - `src/webgl.js`: contexto WebGL2 e limpeza da tela.
 - `src/shaders.js`: leitura, compilação e ligação dos shaders.
 - `src/chao.js`: vértices e desenho do chão.
-- `src/camera.js`: câmera fixa e atualização da proporção da tela.
+- `src/camera.js`: câmera orbital e limites de distância e inclinação.
+- `src/mouse.js`: arraste, captura do ponteiro e rodinha do mouse.
 - `src/matrizes.js`: contas de perspectiva e visão, sem biblioteca externa.
 - `src/formas.js`: cubo, cilindro, aro e telhado reutilizáveis.
 - `src/moinho.js`: montagem do moinho e hierarquia da roda.
+- `shaders/base.vert` e `shaders/base.frag`: shaders iniciais em GLSL ES 3.00.
 
 O moinho combina formas simples com matrizes de posição, rotação e escala.
 As peças fixas usam a matriz da base; a roda usa uma matriz deslocada até o
 eixo e rotacionada com o tempo. Aros, raios e pás recebem essa mesma matriz
 como pai, por isso giram juntos. Tons diferentes nas faces ajudam a enxergar
 o volume; ainda não são um modelo de iluminação.
-- `shaders/base.vert` e `shaders/base.frag`: shaders iniciais em GLSL ES 3.00.
+
+Referência para a câmera: [Sistema Solar, de fegemo](https://github.com/fegemo/ufci-cg-solar-system/blob/main/main.vanilla.js).
+Foi usada a ideia de definir a câmera por posição, alvo e vetor para cima
+para calcular a matriz de visão. As contas continuam nos módulos do projeto,
+sem usar TWGL.
+O controle orbital com mouse foi acrescentado nesta implementação; a versão
+consultada do exemplo usa vistas predefinidas, tecla C e uma lista de seleção.

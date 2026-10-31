@@ -9,10 +9,15 @@ export function perspectiva(angulo, proporcao, perto, longe) {
   ]);
 }
 
-export function olharPara(olho, alvo) {
+export function olharPara(olho, alvo, cima = [0, 1, 0]) {
   // Eixos da câmera: Z aponta para trás, X para a direita e Y para cima.
   const z = normalizar(olho.map((valor, i) => valor - alvo[i]));
-  const x = normalizar([z[2], 0, -z[0]]);
+  let direita = cruzar(cima, z);
+  // Evita uma matriz inválida se a câmera estiver olhando bem de cima.
+  if (Math.hypot(...direita) < 0.0001) {
+    direita = cruzar([0, 0, -1], z);
+  }
+  const x = normalizar(direita);
   const y = [
     z[1] * x[2] - z[2] * x[1],
     z[2] * x[0] - z[0] * x[2],
@@ -33,6 +38,14 @@ export function olharPara(olho, alvo) {
 function normalizar(vetor) {
   const tamanho = Math.hypot(...vetor);
   return vetor.map(valor => valor / tamanho);
+}
+
+function cruzar(a, b) {
+  return [
+    a[1] * b[2] - a[2] * b[1],
+    a[2] * b[0] - a[0] * b[2],
+    a[0] * b[1] - a[1] * b[0],
+  ];
 }
 
 export function identidade() {

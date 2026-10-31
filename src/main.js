@@ -26,6 +26,7 @@ async function iniciar() {
     redimensionar();
 
     function desenhar(agora) {
+      camera.atualizar();
       limparTela(gl);
       chao.desenhar();
       moinho.desenhar(agora / 1000);
