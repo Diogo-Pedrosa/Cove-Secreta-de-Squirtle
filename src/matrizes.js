@@ -34,3 +34,41 @@ function normalizar(vetor) {
   const tamanho = Math.hypot(...vetor);
   return vetor.map(valor => valor / tamanho);
 }
+
+export function identidade() {
+  return new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+}
+
+export function multiplicar(a, b) {
+  const resultado = new Float32Array(16);
+  for (let coluna = 0; coluna < 4; coluna++) {
+    for (let linha = 0; linha < 4; linha++) {
+      for (let i = 0; i < 4; i++) {
+        resultado[coluna * 4 + linha] += a[i * 4 + linha] * b[coluna * 4 + i];
+      }
+    }
+  }
+  return resultado;
+}
+
+export function transladar(x, y, z) {
+  const matriz = identidade();
+  matriz[12] = x;
+  matriz[13] = y;
+  matriz[14] = z;
+  return matriz;
+}
+
+export function escalar(x, y, z) {
+  const matriz = identidade();
+  matriz[0] = x;
+  matriz[5] = y;
+  matriz[10] = z;
+  return matriz;
+}
+
+export function girarX(angulo) {
+  const c = Math.cos(angulo);
+  const s = Math.sin(angulo);
+  return new Float32Array([1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, 0, 0, 0, 1]);
+}

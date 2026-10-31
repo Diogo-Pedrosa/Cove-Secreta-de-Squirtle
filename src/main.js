@@ -2,6 +2,8 @@ import { iniciarWebGL, ajustarTela, limparTela } from './webgl.js';
 import { carregarPrograma } from './shaders.js';
 import { criarCamera } from './camera.js';
 import { criarChao } from './chao.js';
+import { criarFormas } from './formas.js';
+import { criarMoinho } from './moinho.js';
 
 const tela = document.querySelector('#tela');
 
@@ -12,16 +14,25 @@ async function iniciar() {
     gl.useProgram(programa);
     const camera = criarCamera(gl, programa);
     const chao = criarChao(gl, programa);
+    const formas = criarFormas(gl, programa);
+    const moinho = criarMoinho(formas);
 
     function redimensionar() {
       ajustarTela(gl);
       camera.atualizar();
-      limparTela(gl);
-      chao.desenhar();
     }
 
     window.addEventListener('resize', redimensionar);
     redimensionar();
+
+    function desenhar(agora) {
+      limparTela(gl);
+      chao.desenhar();
+      moinho.desenhar(agora / 1000);
+      requestAnimationFrame(desenhar);
+    }
+
+    requestAnimationFrame(desenhar);
   } catch (erro) {
     console.error(erro);
   }

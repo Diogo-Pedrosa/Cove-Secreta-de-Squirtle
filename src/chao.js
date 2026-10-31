@@ -1,3 +1,5 @@
+import { identidade } from './matrizes.js';
+
 export function criarChao(gl, programa) {
   const raio = 12;
   const partes = 64;
@@ -30,9 +32,12 @@ export function criarChao(gl, programa) {
   gl.bindVertexArray(null);
 
   const cor = gl.getUniformLocation(programa, 'cor');
+  const modelo = gl.getUniformLocation(programa, 'modelo');
+  const matriz = identidade();
 
   function desenhar() {
     gl.bindVertexArray(vao);
+    gl.uniformMatrix4fv(modelo, false, matriz);
     gl.uniform4f(cor, 0.89, 0.80, 0.58, 1.0);
     gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 3);
     gl.bindVertexArray(null);
