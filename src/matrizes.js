@@ -85,3 +85,15 @@ export function girarX(angulo) {
   const s = Math.sin(angulo);
   return new Float32Array([1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, 0, 0, 0, 1]);
 }
+
+export function girarY(angulo) {
+  const c = Math.cos(angulo);
+  const s = Math.sin(angulo);
+  return new Float32Array([c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 0, 0, 0, 1]);
+}
+
+export function girarZ(angulo) {
+  const c = Math.cos(angulo);
+  const s = Math.sin(angulo);
+  return new Float32Array([c, s, 0, 0, -s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+}

@@ -1,4 +1,4 @@
-// As formas têm tamanho 1 e ficam centradas na origem.
+// As formas ficam centradas na origem, exceto o telhado apoiado em Y = 0.
 export function criarFormas(gl, programa) {
   const posicao = gl.getAttribLocation(programa, 'posicao');
   const modelo = gl.getUniformLocation(programa, 'modelo');
@@ -76,5 +76,30 @@ export function criarFormas(gl, programa) {
     { tom: .5, vertices: [[-.5, 0, -.5], [.5, 0, -.5], [.5, 0, .5], [-.5, 0, .5]] },
   ]);
 
-  return { cubo, cilindro: criarRedondo(0), aro: criarRedondo(.85), telhado };
+  function criarEsfera() {
+    const faces = [];
+    const aneis = 10;
+    const partes = 16;
+    function ponto(anel, parte) {
+      const altura = anel * Math.PI / aneis;
+      const angulo = parte * Math.PI * 2 / partes;
+      return [.5 * Math.sin(altura) * Math.cos(angulo), .5 * Math.cos(altura), .5 * Math.sin(altura) * Math.sin(angulo)];
+    }
+
+    for (let anel = 0; anel < aneis; anel++) {
+      for (let i = 0; i < partes; i++) {
+        const a = ponto(anel, i);
+        const b = ponto(anel, i + 1);
+        const c = ponto(anel + 1, i + 1);
+        const d = ponto(anel + 1, i);
+        const tom = .72 + .23 * Math.cos((anel + .5) * Math.PI / aneis) + .05 * Math.cos(i * Math.PI * 2 / partes);
+        if (anel === 0) faces.push({ tom, vertices: [a, c, d] });
+        else if (anel === aneis - 1) faces.push({ tom, vertices: [a, b, c] });
+        else faces.push({ tom, vertices: [a, b, c, d] });
+      }
+    }
+    return criarMalha(faces);
+  }
+
+  return { cubo, cilindro: criarRedondo(0), aro: criarRedondo(.85), telhado, esfera: criarEsfera() };
 }

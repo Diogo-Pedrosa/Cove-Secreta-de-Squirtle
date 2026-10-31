@@ -19,7 +19,13 @@ Ainda não há texturas.
 A ilha tem areia no topo plano e uma meia esfera de terra embaixo, formada
 por 16 anéis que diminuem até fechar no fundo. O raio e a profundidade são
 12; a variável `profundidade` em `chao.js` permite achatar essa base.
-O topo continua na altura zero, sem mudar a posição do moinho.
+O centro do topo continua na altura zero, sem mudar a posição do moinho.
+Em um dos lados, a areia desce suavemente até uma praia com água azul
+transparente. A água ocupa somente a área rebaixada e termina na borda da
+ilha, mantendo o formato de diorama. Por enquanto ela é parada, sem ondas.
+A praia foi ampliada para abrir espaço para um Squirtle sobre uma prancha.
+O personagem é um modelo simples feito de esferas e cubos, ainda sem OBJ.
+Ele e a prancha balançam juntos e se deslocam levemente sobre o mar.
 
 Controles da câmera:
 
@@ -37,10 +43,13 @@ Arquivos:
 - `src/webgl.js`: contexto WebGL2 e limpeza da tela.
 - `src/shaders.js`: leitura, compilação e ligação dos shaders.
 - `src/chao.js`: vértices e desenho do chão.
+- `src/terreno.js`: malha do topo e altura da areia na praia.
+- `src/praia.js`: recorte e desenho da água no canto da ilha.
+- `src/squirtle.js`: personagem, prancha e animação de surf.
 - `src/camera.js`: câmera orbital e limites de distância e inclinação.
 - `src/mouse.js`: arraste, captura do ponteiro e rodinha do mouse.
 - `src/matrizes.js`: contas de perspectiva e visão, sem biblioteca externa.
-- `src/formas.js`: cubo, cilindro, aro e telhado reutilizáveis.
+- `src/formas.js`: cubo, cilindro, aro, telhado e esfera reutilizáveis.
 - `src/moinho.js`: montagem do moinho e hierarquia da roda.
 - `shaders/base.vert` e `shaders/base.frag`: shaders iniciais em GLSL ES 3.00.
 

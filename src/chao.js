@@ -1,31 +1,31 @@
 import { identidade } from './matrizes.js';
+import { alturaAreia, criarTopo, raioIlha, partesIlha } from './terreno.js';
 
 export function criarChao(gl, programa) {
-  const raio = 12;
-  const partes = 64;
+  const raio = raioIlha;
+  const partes = partesIlha;
   const profundidade = raio;
   const camadas = 16;
   const faixas = [];
   const pontos = [];
 
-  // Cada fatia liga o centro a dois pontos da borda, no plano XZ.
-  for (let i = 0; i < partes; i++) {
-    const angulo = (i / partes) * Math.PI * 2;
-    const proximo = ((i + 1) / partes) * Math.PI * 2;
-
-    pontos.push(
-      0, 0, 0,
-      Math.cos(proximo) * raio, 0, Math.sin(proximo) * raio,
-      Math.cos(angulo) * raio, 0, Math.sin(angulo) * raio,
-    );
+  const areia = [];
+  const molhada = [];
+  for (const triangulo of criarTopo()) {
+    const altura = triangulo.reduce((soma, ponto) => soma + ponto[1], 0) / 3;
+    const destino = altura < -.08 ? molhada : areia;
+    for (const ponto of triangulo) destino.push(...ponto);
   }
-
+  pontos.push(...areia, ...molhada);
+  const quantidadeAreia = areia.length / 3;
   const quantidadeTopo = pontos.length / 3;
 
   // Os anéis diminuem com o cosseno e descem com o seno.
   function ponto(altura, angulo) {
     const tamanho = raio * Math.cos(altura);
-    return [tamanho * Math.cos(angulo), -profundidade * Math.sin(altura), tamanho * Math.sin(angulo)];
+    const borda = alturaAreia(raio * Math.cos(angulo), raio * Math.sin(angulo));
+    const y = -profundidade * Math.sin(altura) + borda * Math.cos(altura) ** 2;
+    return [tamanho * Math.cos(angulo), y, tamanho * Math.sin(angulo)];
   }
 
   for (let camada = 0; camada < camadas; camada++) {
@@ -73,7 +73,9 @@ export function criarChao(gl, programa) {
     gl.bindVertexArray(vao);
     gl.uniformMatrix4fv(modelo, false, matriz);
     gl.uniform4f(cor, 0.89, 0.80, 0.58, 1.0);
-    gl.drawArrays(gl.TRIANGLES, 0, quantidadeTopo);
+    gl.drawArrays(gl.TRIANGLES, 0, quantidadeAreia);
+    gl.uniform4f(cor, .73, .65, .44, 1);
+    gl.drawArrays(gl.TRIANGLES, quantidadeAreia, quantidadeTopo - quantidadeAreia);
 
     for (const faixa of faixas) {
       gl.uniform4f(cor, .53 * faixa.tom, .34 * faixa.tom, .20 * faixa.tom, 1);
