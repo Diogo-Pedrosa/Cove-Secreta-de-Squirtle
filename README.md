@@ -16,6 +16,11 @@ Por enquanto, a cena tem um chão circular com cor de areia, uma câmera aérea
 com perspectiva e um moinho d'água no centro. A roda e as pás giram no eixo X.
 Ainda não há texturas.
 
+A ilha tem areia no topo plano e uma meia esfera de terra embaixo, formada
+por 16 anéis que diminuem até fechar no fundo. O raio e a profundidade são
+12; a variável `profundidade` em `chao.js` permite achatar essa base.
+O topo continua na altura zero, sem mudar a posição do moinho.
+
 Controles da câmera:
 
 - Arrastar com o botão esquerdo: girar ao redor do moinho e mudar a inclinação.
