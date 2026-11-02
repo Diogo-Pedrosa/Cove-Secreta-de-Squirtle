@@ -34,11 +34,30 @@ export function criarSquirtle(formas) {
 
     peca(formas.esfera, corpo, [0, 1.7, .16], [1.25, 1.08, 1.1], azul);
     for (const lado of [-1, 1]) {
-      peca(formas.esfera, corpo, [lado * .28, 1.77, .66], [.22, .36, .10], [.17, .07, .14]);
+      peca(formas.esfera, corpo, [lado * .28, 1.77, .66], [.22, .36, .10], [.9, .04, .06]);
       peca(formas.esfera, corpo, [lado * .28 - .025, 1.85, .71], [.07, .11, .035], [1, 1, 1]);
       peca(formas.esfera, corpo, [lado * .33, .26, .12], [.42, .3, .64], azul);
       const braco = multiplicar(corpo, girarZ(lado * -.22));
       peca(formas.esfera, braco, [lado * .7, 1, .05], [.7, .3, .35], azul);
+      if (lado === 1) {
+        // O cigarro acompanha a mao e o balanco do personagem.
+        const cigarro = multiplicar(
+          multiplicar(braco, transladar(.96, 1.03, .19)),
+          multiplicar(girarZ(.35), escalar(1.8, 1.6, 1.6))
+        );
+        // Piteira de papel e corpo artesanal que engrossa ate a brasa.
+        peca(formas.cilindro, cigarro, [0, 0, 0], [.13, .034, .034], [.76, .68, .50]);
+        for (let i = 0; i < 9; i++) {
+          const raio = .039 + i * .003;
+          const tom = i % 2 === 0 ? [.89, .85, .69] : [.85, .81, .65];
+          peca(formas.cilindro, cigarro, [.09 + i * .045, .002 * Math.sin(i * 2), 0],
+            [.05, raio, raio * .94], tom);
+        }
+        peca(formas.cilindro, cigarro, [.49, 0, 0], [.035, .063, .059], [.30, .25, .20]);
+        peca(formas.cilindro, cigarro, [.512, 0, 0], [.018, .056, .052], [.95, .25, .045]);
+        const ponta = multiplicar(cigarro, girarZ(.12));
+        peca(formas.esfera, ponta, [.54, -.06, 0], [.075, .04, .035], [.49, .43, .33]);
+      }
     }
     peca(formas.esfera, corpo, [0, 1.48, .68], [.27, .045, .04], [.17, .07, .14]);
 
