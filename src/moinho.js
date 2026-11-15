@@ -1,13 +1,14 @@
 import { identidade, multiplicar, transladar, escalar, girarX } from './matrizes.js';
+import { materiais } from './iluminacao.js';
 
 export function criarMoinho(formas) {
   const madeira = [.55, .32, .16];
   const clara = [.72, .48, .26];
   const escura = [.30, .18, .10];
 
-  function peca(forma, pai, lugar, tamanho, cor) {
+  function peca(forma, pai, lugar, tamanho, cor, material = materiais.madeira) {
     const local = multiplicar(transladar(...lugar), escalar(...tamanho));
-    forma(multiplicar(pai, local), cor);
+    forma(multiplicar(pai, local), cor, material);
   }
 
   function desenhar(tempo) {
@@ -26,7 +27,7 @@ export function criarMoinho(formas) {
 
     // Porta e janela ficam um pouco à frente da parede para não sobrepor planos.
     peca(formas.cubo, base, [-1.1, 3.15, 1.47], [.65, 1, .08], escura);
-    peca(formas.cubo, base, [.25, 3.5, 1.47], [.6, .55, .08], [.35, .66, .72]);
+    peca(formas.cubo, base, [.25, 3.5, 1.47], [.6, .55, .08], [.35, .66, .72], materiais.perola);
 
     // O eixo fica parado; a roda gira ao redor dele.
     peca(formas.cilindro, base, [1.75, 2.65, 0], [3.3, .17, .17], escura);

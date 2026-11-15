@@ -1,18 +1,42 @@
+import { materiais } from './iluminacao.js';
+
+function normalTriangulo(a, b, c) {
+  const ux = b[0] - a[0];
+  const uy = b[1] - a[1];
+  const uz = b[2] - a[2];
+  const vx = c[0] - a[0];
+  const vy = c[1] - a[1];
+  const vz = c[2] - a[2];
+  const nx = uy * vz - uz * vy;
+  const ny = uz * vx - ux * vz;
+  const nz = ux * vy - uy * vx;
+  const tamanho = Math.hypot(nx, ny, nz) || 1;
+  return [nx / tamanho, ny / tamanho, nz / tamanho];
+}
+
 // As formas ficam centradas na origem, exceto o telhado apoiado em Y = 0.
-export function criarFormas(gl, programa) {
+export function criarFormas(gl, programa, iluminacao) {
   const posicao = gl.getAttribLocation(programa, 'posicao');
+  const normal = gl.getAttribLocation(programa, 'normal');
   const modelo = gl.getUniformLocation(programa, 'modelo');
   const cor = gl.getUniformLocation(programa, 'cor');
+  const localMaterial = gl.getUniformLocation(programa, 'material');
 
-  function criarMalha(faces) {
+  function criarMalha(faces, materialPadrao = materiais.padrao) {
     const pontos = [];
+    const normais = [];
     const partes = [];
 
     for (const { vertices, tom } of faces) {
       const inicio = pontos.length / 3;
       // Transforma cada face em triângulos.
       for (let i = 1; i < vertices.length - 1; i++) {
-        pontos.push(...vertices[0], ...vertices[i], ...vertices[i + 1]);
+        const a = vertices[0];
+        const b = vertices[i];
+        const c = vertices[i + 1];
+        const n = normalTriangulo(a, b, c);
+        pontos.push(...a, ...b, ...c);
+        normais.push(...n, ...n, ...n);
       }
       partes.push({ inicio, quantidade: pontos.length / 3 - inicio, tom });
     }
@@ -24,13 +48,24 @@ export function criarFormas(gl, programa) {
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pontos), gl.STATIC_DRAW);
     gl.enableVertexAttribArray(posicao);
     gl.vertexAttribPointer(posicao, 3, gl.FLOAT, false, 0, 0);
+
+    if (normal !== -1) {
+      const bufferNormal = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, bufferNormal);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normais), gl.STATIC_DRAW);
+      gl.enableVertexAttribArray(normal);
+      gl.vertexAttribPointer(normal, 3, gl.FLOAT, false, 0, 0);
+    }
     gl.bindVertexArray(null);
 
-    function desenhar(matriz, tinta) {
+    function desenhar(matriz, tinta, material = materialPadrao) {
+      const iluminada = iluminacao ? iluminacao.ativa() : true;
       gl.bindVertexArray(vao);
       gl.uniformMatrix4fv(modelo, false, matriz);
+      gl.uniform4fv(localMaterial, material);
       for (const parte of partes) {
-        gl.uniform4f(cor, tinta[0] * parte.tom, tinta[1] * parte.tom, tinta[2] * parte.tom, 1);
+        const fator = iluminada ? 1 : parte.tom;
+        gl.uniform4f(cor, tinta[0] * fator, tinta[1] * fator, tinta[2] * fator, 1);
         gl.drawArrays(gl.TRIANGLES, parte.inicio, parte.quantidade);
       }
       gl.bindVertexArray(null);
@@ -98,7 +133,7 @@ export function criarFormas(gl, programa) {
         else faces.push({ tom, vertices: [a, b, c, d] });
       }
     }
-    return criarMalha(faces);
+    return criarMalha(faces, materiais.plastico);
   }
 
   // Folha com uma dobra no meio e a ponta caída.
@@ -111,7 +146,7 @@ export function criarFormas(gl, programa) {
     { tom: .6, vertices: [[0, 0, 0], [.45, .04, 0], [.45, .08, .18]] },
     { tom: .6, vertices: [[.45, .04, 0], [.45, .08, -.18], [1, -.25, 0]] },
     { tom: .6, vertices: [[.45, .04, 0], [1, -.25, 0], [.45, .08, .18]] },
-  ]);
+  ], materiais.folha);
 
   function criarConcha() {
     const faces = [];
@@ -148,7 +183,7 @@ export function criarFormas(gl, programa) {
       }
     }
 
-    return criarMalha(faces);
+    return criarMalha(faces, materiais.perola);
   }
 
   return {

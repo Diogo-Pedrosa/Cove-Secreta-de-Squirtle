@@ -1,6 +1,23 @@
+import { materiais } from './iluminacao.js';
+
+function normalTriangulo(a, b, c) {
+  const ux = b[0] - a[0];
+  const uy = b[1] - a[1];
+  const uz = b[2] - a[2];
+  const vx = c[0] - a[0];
+  const vy = c[1] - a[1];
+  const vz = c[2] - a[2];
+  const nx = uy * vz - uz * vy;
+  const ny = uz * vx - ux * vz;
+  const nz = ux * vy - uy * vx;
+  const tamanho = Math.hypot(nx, ny, nz) || 1;
+  return [nx / tamanho, ny / tamanho, nz / tamanho];
+}
+
 export function interpretarObj(conteudo) {
   const vertices = [];
   const triangulos = [];
+  const normais = [];
   const linhas = conteudo.split(/\r?\n/);
 
   for (let numeroLinha = 0; numeroLinha < linhas.length; numeroLinha++) {
@@ -33,7 +50,18 @@ export function interpretarObj(conteudo) {
     }
 
     for (let i = 1; i < indices.length - 1; i++) {
-      triangulos.push(...vertices[indices[0]], ...vertices[indices[i]], ...vertices[indices[i + 1]]);
+      const a = vertices[indices[0]];
+      const b = vertices[indices[i]];
+      const c = vertices[indices[i + 1]];
+      let n = normalTriangulo(a, b, c);
+      const mx = (a[0] + b[0] + c[0]) / 3;
+      const my = (a[1] + b[1] + c[1]) / 3 - .12;
+      const mz = (a[2] + b[2] + c[2]) / 3;
+      if (n[0] * mx + n[1] * my + n[2] * mz < 0) {
+        n = [-n[0], -n[1], -n[2]];
+      }
+      triangulos.push(...a, ...b, ...c);
+      normais.push(...n, ...n, ...n);
     }
   }
 
@@ -41,7 +69,10 @@ export function interpretarObj(conteudo) {
     throw new Error('O arquivo OBJ não contém faces válidas.');
   }
 
-  return new Float32Array(triangulos);
+  return {
+    vertices: new Float32Array(triangulos),
+    normais: new Float32Array(normais),
+  };
 }
 
 export async function carregarObj(gl, programa, caminho) {
@@ -50,7 +81,7 @@ export async function carregarObj(gl, programa, caminho) {
     throw new Error(`Não foi possível carregar o modelo OBJ: ${caminho}`);
   }
 
-  const vertices = interpretarObj(await resposta.text());
+  const { vertices, normais } = interpretarObj(await resposta.text());
   const quantidade = vertices.length / 3;
   const vao = gl.createVertexArray();
   gl.bindVertexArray(vao);
@@ -61,6 +92,15 @@ export async function carregarObj(gl, programa, caminho) {
   const posicao = gl.getAttribLocation(programa, 'posicao');
   gl.enableVertexAttribArray(posicao);
   gl.vertexAttribPointer(posicao, 3, gl.FLOAT, false, 0, 0);
+
+  const normal = gl.getAttribLocation(programa, 'normal');
+  if (normal !== -1) {
+    const bufferNormais = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferNormais);
+    gl.bufferData(gl.ARRAY_BUFFER, normais, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(normal);
+    gl.vertexAttribPointer(normal, 3, gl.FLOAT, false, 0, 0);
+  }
 
   const coordenadaTextura = gl.getAttribLocation(programa, 'coordenadaTextura');
   const bufferTextura = gl.createBuffer();
@@ -75,11 +115,13 @@ export async function carregarObj(gl, programa, caminho) {
   const usarTextura = gl.getUniformLocation(programa, 'usarTextura');
   const usarOndas = gl.getUniformLocation(programa, 'usarOndas');
   const usarProfundidade = gl.getUniformLocation(programa, 'usarProfundidade');
+  const localMaterial = gl.getUniformLocation(programa, 'material');
 
-  function desenhar(matriz, tinta) {
+  function desenhar(matriz, tinta, material = materiais.plastico) {
     gl.bindVertexArray(vao);
     gl.uniformMatrix4fv(localModelo, false, matriz);
     gl.uniform4f(cor, tinta[0], tinta[1], tinta[2], 1);
+    gl.uniform4fv(localMaterial, material);
     gl.uniform1i(usarTextura, 0);
     gl.uniform1i(usarOndas, 0);
     gl.uniform1i(usarProfundidade, 0);

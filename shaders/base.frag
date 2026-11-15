@@ -9,9 +9,15 @@ uniform bool usarTextura;
 uniform bool usarProfundidade;
 uniform float profundidadeMaxima;
 uniform float tempoAgua;
+uniform bool usarIluminacao;
+uniform vec3 direcaoLuz;
+uniform vec3 posicaoCamera;
+uniform vec4 material;
 
 in vec2 uv;
 in float profundidadeInterpolada;
+in vec3 posicaoMundo;
+in vec3 normalMundo;
 
 void main() {
   corFinal = cor;
@@ -33,4 +39,21 @@ void main() {
     corFinal.rgb = mix(corAgua, vec3(0.68, 0.86, 0.96), reflexo);
     corFinal.a = mix(0.48, 0.72, smoothstep(0.0, 1.0, profundidade));
   }
+  if (usarIluminacao && length(normalMundo) > 0.0001) {
+    vec3 n = normalize(normalMundo);
+    vec3 l = normalize(-direcaoLuz);
+    vec3 v = normalize(posicaoCamera - posicaoMundo);
+    vec3 r = reflect(-l, n);
+
+    float ambiente = material.x;
+    float difusa = material.y * max(dot(n, l), 0.0);
+    float especular = 0.0;
+    if (dot(n, l) > 0.0) {
+      especular = material.z * pow(max(dot(r, v), 0.0), max(material.w, 1.0));
+    }
+
+    vec3 corLuz = vec3(1.0, 0.98, 0.92);
+    corFinal.rgb = corFinal.rgb * (ambiente + difusa * corLuz) + especular * corLuz;
+  }
 }
+

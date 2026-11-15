@@ -1,5 +1,20 @@
 import { identidade } from './matrizes.js';
 import { alturaAreia, criarTopo, raioIlha, partesIlha } from './terreno.js';
+import { materiais } from './iluminacao.js';
+
+function normalTriangulo(a, b, c) {
+  const ux = b[0] - a[0];
+  const uy = b[1] - a[1];
+  const uz = b[2] - a[2];
+  const vx = c[0] - a[0];
+  const vy = c[1] - a[1];
+  const vz = c[2] - a[2];
+  const nx = uy * vz - uz * vy;
+  const ny = uz * vx - ux * vz;
+  const nz = ux * vy - uy * vx;
+  const tamanho = Math.hypot(nx, ny, nz) || 1;
+  return [nx / tamanho, ny / tamanho, nz / tamanho];
+}
 
 export function criarChao(gl, programa) {
   const raio = raioIlha;
@@ -8,15 +23,31 @@ export function criarChao(gl, programa) {
   const camadas = 16;
   const faixas = [];
   const pontos = [];
+  const normais = [];
+
+  function adicionarTriangulo( destino, a, b, c) {
+    let n = normalTriangulo(a, b, c);
+    if (destino !== pontos && n[1] < 0) {
+      n = [-n[0], -n[1], -n[2]];
+    }
+    destino.push(...a, ...b, ...c);
+    return n;
+  }
 
   const areia = [];
+  const normaisAreia = [];
   const molhada = [];
+  const normaisMolhada = [];
   for (const triangulo of criarTopo()) {
     const altura = triangulo.reduce((soma, ponto) => soma + ponto[1], 0) / 3;
-    const destino = altura < -.08 ? molhada : areia;
-    for (const ponto of triangulo) destino.push(...ponto);
+    const ehMolhada = altura < -.08;
+    const destino = ehMolhada ? molhada : areia;
+    const destinoNormal = ehMolhada ? normaisMolhada : normaisAreia;
+    const n = adicionarTriangulo(destino, triangulo[0], triangulo[1], triangulo[2]);
+    destinoNormal.push(...n, ...n, ...n);
   }
   pontos.push(...areia, ...molhada);
+  normais.push(...normaisAreia, ...normaisMolhada);
   const quantidadeAreia = areia.length / 3;
   const quantidadeTopo = pontos.length / 3;
 
@@ -26,6 +57,18 @@ export function criarChao(gl, programa) {
     const borda = alturaAreia(raio * Math.cos(angulo), raio * Math.sin(angulo));
     const y = -profundidade * Math.sin(altura) + borda * Math.cos(altura) ** 2;
     return [tamanho * Math.cos(angulo), y, tamanho * Math.sin(angulo)];
+  }
+
+  function adicionarHemisferio(a, b, c) {
+    let n = normalTriangulo(a, b, c);
+    const mx = (a[0] + b[0] + c[0]) / 3;
+    const my = (a[1] + b[1] + c[1]) / 3;
+    const mz = (a[2] + b[2] + c[2]) / 3;
+    if (n[0] * mx + n[1] * my + n[2] * mz < 0) {
+      n = [-n[0], -n[1], -n[2]];
+    }
+    pontos.push(...a, ...b, ...c);
+    normais.push(...n, ...n, ...n);
   }
 
   for (let camada = 0; camada < camadas; camada++) {
@@ -41,11 +84,12 @@ export function criarChao(gl, programa) {
 
       if (camada === camadas - 1) {
         // Todos os trechos terminam no mesmo ponto, fechando a meia esfera.
-        pontos.push(...a, ...b, 0, -profundidade, 0);
+        adicionarHemisferio(a, b, [0, -profundidade, 0]);
       } else {
         const c = ponto(abaixo, proximo);
         const d = ponto(abaixo, angulo);
-        pontos.push(...a, ...b, ...c, ...a, ...c, ...d);
+        adicionarHemisferio(a, b, c);
+        adicionarHemisferio(a, c, d);
       }
     }
     faixas.push({ inicio, quantidade: pontos.length / 3 - inicio, tom: 1 - camada / camadas * .35 });
@@ -64,6 +108,15 @@ export function criarChao(gl, programa) {
   gl.enableVertexAttribArray(posicao);
   gl.vertexAttribPointer(posicao, 3, gl.FLOAT, false, 0, 0);
 
+  const normal = gl.getAttribLocation(programa, 'normal');
+  if (normal !== -1) {
+    const bufferNormal = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferNormal);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normais), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(normal);
+    gl.vertexAttribPointer(normal, 3, gl.FLOAT, false, 0, 0);
+  }
+
   const coordenadaTextura = gl.getAttribLocation(programa, 'coordenadaTextura');
   const coordenadas = [];
   for (let i = 0; i < pontos.length; i += 3) {
@@ -79,6 +132,7 @@ export function criarChao(gl, programa) {
   const cor = gl.getUniformLocation(programa, 'cor');
   const modelo = gl.getUniformLocation(programa, 'modelo');
   const usarTextura = gl.getUniformLocation(programa, 'usarTextura');
+  const localMaterial = gl.getUniformLocation(programa, 'material');
   const textura = criarTexturaAreia(gl);
   const matriz = identidade();
 
@@ -88,6 +142,7 @@ export function criarChao(gl, programa) {
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, textura);
     gl.uniform1i(usarTextura, 1);
+    gl.uniform4fv(localMaterial, materiais.areia);
     gl.uniform4f(cor, 0.89, 0.80, 0.58, 1.0);
     gl.drawArrays(gl.TRIANGLES, 0, quantidadeAreia);
     gl.uniform4f(cor, .73, .65, .44, 1);
@@ -95,6 +150,7 @@ export function criarChao(gl, programa) {
     gl.uniform1i(usarTextura, 0);
     gl.bindTexture(gl.TEXTURE_2D, null);
 
+    gl.uniform4fv(localMaterial, materiais.terra);
     for (const faixa of faixas) {
       gl.uniform4f(cor, .53 * faixa.tom, .34 * faixa.tom, .20 * faixa.tom, 1);
       gl.drawArrays(gl.TRIANGLES, faixa.inicio, faixa.quantidade);

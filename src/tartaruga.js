@@ -1,6 +1,7 @@
 import { alturaOnda, inclinacaoOnda } from './ondas.js';
 import { alturaAreia } from './terreno.js';
 import { multiplicar, transladar, escalar, girarX, girarY, girarZ } from './matrizes.js';
+import { materiais } from './iluminacao.js';
 
 export function criarTartaruga(formas) {
   let pose = 0;
@@ -14,10 +15,10 @@ export function criarTartaruga(formas) {
     }
   });
 
-  function peca(forma, pai, lugar, tamanho, cor, rotacao) {
+  function peca(forma, pai, lugar, tamanho, cor, rotacao, material) {
     let local = multiplicar(transladar(...lugar), escalar(...tamanho));
     if (rotacao) local = multiplicar(transladar(...lugar), multiplicar(rotacao, escalar(...tamanho)));
-    forma(multiplicar(pai, local), cor);
+    forma(multiplicar(pai, local), cor, material);
   }
 
   function desenharPrancha(base) {
@@ -75,8 +76,8 @@ export function criarTartaruga(formas) {
       multiplicar(braco, transladar(.96, 1.03, .19)),
       girarZ(.35)
     );
-    peca(formas.cilindro, garrafa, [0, 0, 0], [.32, .105, .105], [.08, .58, .22]);
-    peca(formas.cilindro, garrafa, [.22, 0, 0], [.13, .055, .055], [.10, .67, .27]);
+    peca(formas.cilindro, garrafa, [0, 0, 0], [.32, .105, .105], [.08, .58, .22], null, materiais.perola);
+    peca(formas.cilindro, garrafa, [.22, 0, 0], [.13, .055, .055], [.10, .67, .27], null, materiais.perola);
     peca(formas.cilindro, garrafa, [.32, 0, 0], [.065, .06, .06], [.78, .76, .64]);
   }
 

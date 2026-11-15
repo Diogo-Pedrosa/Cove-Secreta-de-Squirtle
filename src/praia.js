@@ -1,10 +1,12 @@
 import { identidade } from './matrizes.js';
 import { criarTopo } from './terreno.js';
 import { parametrosOndas } from './ondas.js';
+import { materiais } from './iluminacao.js';
 
 export function criarPraia(gl, programa) {
   const nivel = -.35;
   const pontos = [];
+  const normais = [];
   const coordenadasTextura = [];
   const influenciaOndas = [];
   const profundidades = [];
@@ -12,6 +14,7 @@ export function criarPraia(gl, programa) {
 
   function adicionarPonto(ponto) {
     pontos.push(ponto[0], ponto[1], ponto[2]);
+    normais.push(0, 1, 0);
     coordenadasTextura.push(ponto[0] * .12, ponto[2] * .12);
     influenciaOndas.push(ponto[3]);
     profundidades.push(ponto[4]);
@@ -89,6 +92,15 @@ export function criarPraia(gl, programa) {
   gl.enableVertexAttribArray(posicao);
   gl.vertexAttribPointer(posicao, 3, gl.FLOAT, false, 0, 0);
 
+  const normal = gl.getAttribLocation(programa, 'normal');
+  if (normal !== -1) {
+    const bufferNormal = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferNormal);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normais), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(normal);
+    gl.vertexAttribPointer(normal, 3, gl.FLOAT, false, 0, 0);
+  }
+
   const coordenadaTextura = gl.getAttribLocation(programa, 'coordenadaTextura');
   const bufferTextura = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, bufferTextura);
@@ -122,6 +134,7 @@ export function criarPraia(gl, programa) {
   const tempoOnda = gl.getUniformLocation(programa, 'tempoOnda');
   const tempoAgua = gl.getUniformLocation(programa, 'tempoAgua');
   const profundidadeMaxima = gl.getUniformLocation(programa, 'profundidadeMaxima');
+  const localMaterial = gl.getUniformLocation(programa, 'material');
   const matriz = identidade();
 
   function desenhar(tempo) {
@@ -130,6 +143,7 @@ export function criarPraia(gl, programa) {
     gl.uniform1i(usarTextura, 0);
     gl.uniform1i(usarOndas, 1);
     gl.uniform1i(usarProfundidade, 1);
+    gl.uniform4fv(localMaterial, materiais.agua);
     gl.uniform1f(amplitudeOnda, parametrosOndas.amplitude);
     gl.uniform1f(numeroOnda, parametrosOndas.numeroOnda);
     gl.uniform1f(frequenciaOnda, parametrosOndas.frequencia);

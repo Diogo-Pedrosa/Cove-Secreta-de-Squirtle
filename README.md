@@ -27,9 +27,13 @@ A praia foi ampliada para abrir espaço para um Squirtle sobre uma prancha.
 O personagem é um modelo simples feito de esferas e cubos, ainda sem OBJ.
 Ele e a prancha balançam juntos e se deslocam levemente sobre o mar.
 
-Controles da câmera:
+Controles:
 
-- Arrastar com o botão esquerdo: girar ao redor do moinho e mudar a inclinação.
+- `1`: câmera automática a ~45º girando ao redor do centro da ilha.
+- `2`: câmera orbital controlada pelo arraste do mouse.
+- `P`: alternar entre as 3 poses da tartaruga (surfando, deitada na prancha e descansando na espreguiçadeira).
+- `L`: ativar/desativar a iluminação dinâmica (modelo de Phong).
+- Arrastar com o botão esquerdo (na câmera `2`): girar ao redor do moinho e mudar a inclinação.
 - Rodinha do mouse: aproximar e afastar.
 
 O mouse usa o deslocamento em pixels. A distância fica entre 8 e 55 e a inclinação não passa por baixo
@@ -51,13 +55,15 @@ Arquivos:
 - `src/matrizes.js`: contas de perspectiva e visão, sem biblioteca externa.
 - `src/formas.js`: cubo, cilindro, aro, telhado e esfera reutilizáveis.
 - `src/moinho.js`: montagem do moinho e hierarquia da roda.
-- `shaders/base.vert` e `shaders/base.frag`: shaders iniciais em GLSL ES 3.00.
+- `src/iluminacao.js`: fonte de luz direcional, materiais de Phong e alternância pela tecla `L`.
+- `shaders/base.vert` e `shaders/base.frag`: shaders em GLSL ES 3.00 com ondas e iluminação de Phong.
 
 O moinho combina formas simples com matrizes de posição, rotação e escala.
 As peças fixas usam a matriz da base; a roda usa uma matriz deslocada até o
 eixo e rotacionada com o tempo. Aros, raios e pás recebem essa mesma matriz
-como pai, por isso giram juntos. Tons diferentes nas faces ajudam a enxergar
-o volume; ainda não são um modelo de iluminação.
+como pai, por isso giram juntos. A cena conta com iluminação dinâmica de Phong
+(componentes ambiente, difusa e especular) com materiais distintos para areia,
+terra, madeira, folhagem, conchas, pérolas e água, podendo ser alternada com `L`.
 
 Referência para a câmera: [Sistema Solar, de fegemo](https://github.com/fegemo/ufci-cg-solar-system/blob/main/main.vanilla.js).
 Foi usada a ideia de definir a câmera por posição, alvo e vetor para cima

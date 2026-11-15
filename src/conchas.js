@@ -1,5 +1,6 @@
 import { identidade, multiplicar, transladar, escalar, girarY } from './matrizes.js';
 import { alturaAreia } from './terreno.js';
+import { materiais } from './iluminacao.js';
 
 export function criarConchas(formas) {
   const lugares = [
@@ -22,8 +23,8 @@ export function criarConchas(formas) {
 
   function desenhar() {
     for (const { corpo, perola, cor } of conchas) {
-      formas.concha(corpo, cor);
-      formas.esfera(perola, [.97, .87, .68]);
+      formas.concha(corpo, cor, materiais.plastico);
+      formas.esfera(perola, [.97, .87, .68], materiais.perola);
     }
   }
 

@@ -4,6 +4,7 @@ import { criarMouse } from './mouse.js';
 export function criarCamera(gl, programa) {
   const localProjecao = gl.getUniformLocation(programa, 'projecao');
   const localVisao = gl.getUniformLocation(programa, 'visao');
+  const localPosicaoCamera = gl.getUniformLocation(programa, 'posicaoCamera');
   const alvo = [0, 1, 0];
   const cima = [0, 1, 0];
   const mouse = criarMouse(gl.canvas);
@@ -58,6 +59,7 @@ export function criarCamera(gl, programa) {
 
     gl.uniformMatrix4fv(localProjecao, false, projecao);
     gl.uniformMatrix4fv(localVisao, false, visao);
+    gl.uniform3fv(localPosicaoCamera, posicao);
   }
 
   return {

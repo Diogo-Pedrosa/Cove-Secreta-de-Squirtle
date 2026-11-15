@@ -1,6 +1,7 @@
 import { iniciarWebGL, ajustarTela, limparTela } from './webgl.js';
 import { carregarPrograma } from './shaders.js';
 import { criarCamera } from './camera.js';
+import { criarIluminacao } from './iluminacao.js';
 import { criarChao } from './chao.js';
 import { criarFormas } from './formas.js';
 import { criarMoinho } from './moinho.js';
@@ -20,8 +21,9 @@ async function iniciar() {
     const programa = await carregarPrograma(gl);
     gl.useProgram(programa);
     const camera = criarCamera(gl, programa);
+    const iluminacao = criarIluminacao(gl, programa);
     const chao = criarChao(gl, programa);
-    const formas = criarFormas(gl, programa);
+    const formas = criarFormas(gl, programa, iluminacao);
     const moinho = criarMoinho(formas);
     const praia = criarPraia(gl, programa);
     const tartaruga = criarTartaruga(formas);
@@ -45,6 +47,7 @@ async function iniciar() {
 
     function desenhar(agora) {
       camera.atualizar();
+      iluminacao.atualizar();
       limparTela(gl);
       chao.desenhar();
       moinho.desenhar(agora / 1000);
