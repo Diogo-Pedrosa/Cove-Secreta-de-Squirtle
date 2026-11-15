@@ -60,11 +60,12 @@ export function criarFormas(gl, programa, iluminacao) {
 
     function desenhar(matriz, tinta, material = materialPadrao) {
       const iluminada = iluminacao ? iluminacao.ativa() : true;
+      const emissivo = material === materiais.emissivo;
       gl.bindVertexArray(vao);
       gl.uniformMatrix4fv(modelo, false, matriz);
       gl.uniform4fv(localMaterial, material);
       for (const parte of partes) {
-        const fator = iluminada ? 1 : parte.tom;
+        const fator = (iluminada || emissivo) ? 1 : parte.tom;
         gl.uniform4f(cor, tinta[0] * fator, tinta[1] * fator, tinta[2] * fator, 1);
         gl.drawArrays(gl.TRIANGLES, parte.inicio, parte.quantidade);
       }

@@ -11,6 +11,8 @@ uniform float profundidadeMaxima;
 uniform float tempoAgua;
 uniform bool usarIluminacao;
 uniform vec3 direcaoLuz;
+uniform vec3 corLuz;
+uniform vec3 corAmbiente;
 uniform vec3 posicaoCamera;
 uniform vec4 material;
 
@@ -48,12 +50,11 @@ void main() {
     float ambiente = material.x;
     float difusa = material.y * max(dot(n, l), 0.0);
     float especular = 0.0;
-    if (dot(n, l) > 0.0) {
+    if (dot(n, l) > 0.0 && material.z > 0.0) {
       especular = material.z * pow(max(dot(r, v), 0.0), max(material.w, 1.0));
     }
 
-    vec3 corLuz = vec3(1.0, 0.98, 0.92);
-    corFinal.rgb = corFinal.rgb * (ambiente + difusa * corLuz) + especular * corLuz;
+    corFinal.rgb = corFinal.rgb * (ambiente * corAmbiente + difusa * corLuz) + especular * corLuz;
   }
 }
 

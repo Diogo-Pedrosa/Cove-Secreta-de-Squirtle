@@ -46,17 +46,19 @@ async function iniciar() {
     redimensionar();
 
     function desenhar(agora) {
+      const tempo = agora / 1000;
       camera.atualizar();
-      iluminacao.atualizar();
+      iluminacao.atualizar(tempo);
       limparTela(gl);
+      iluminacao.desenharCeu(tempo, formas, transladar, escalar, multiplicar);
       chao.desenhar();
-      moinho.desenhar(agora / 1000);
+      moinho.desenhar(tempo);
       palmeiras.desenhar();
       cabana.desenhar();
       conchas.desenhar();
       estrela.desenhar(matrizEstrela, [.93, .38, .16]);
-      tartaruga.desenhar(agora / 1000);
-      praia.desenhar(agora / 1000);
+      tartaruga.desenhar(tempo);
+      praia.desenhar(tempo);
       requestAnimationFrame(desenhar);
     }
 

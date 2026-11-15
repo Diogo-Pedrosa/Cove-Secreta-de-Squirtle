@@ -17,7 +17,7 @@ com perspectiva e um moinho d'água no centro. A roda e as pás giram no eixo X.
 Ainda não há texturas.
 
 A ilha tem areia no topo plano e uma meia esfera de terra embaixo, formada
-por 16 anéis que diminuem até fechar no fundo. O raio e a profundidade são
+por 16 anéis que diminuem até fechar no fundo. O raio e a profundidade sãoç
 12; a variável `profundidade` em `chao.js` permite achatar essa base.
 O centro do topo continua na altura zero, sem mudar a posição do moinho.
 Em um dos lados, a areia desce suavemente até uma praia com água azul
@@ -55,15 +55,13 @@ Arquivos:
 - `src/matrizes.js`: contas de perspectiva e visão, sem biblioteca externa.
 - `src/formas.js`: cubo, cilindro, aro, telhado e esfera reutilizáveis.
 - `src/moinho.js`: montagem do moinho e hierarquia da roda.
-- `src/iluminacao.js`: fonte de luz direcional, materiais de Phong e alternância pela tecla `L`.
+- `src/iluminacao.js`: ciclo dia/noite com Sol, Lua e estrelas dentro do domo, luz direcional dinâmica, materiais de Phong e alternância pela tecla `L`.
 - `shaders/base.vert` e `shaders/base.frag`: shaders em GLSL ES 3.00 com ondas e iluminação de Phong.
 
 O moinho combina formas simples com matrizes de posição, rotação e escala.
 As peças fixas usam a matriz da base; a roda usa uma matriz deslocada até o
 eixo e rotacionada com o tempo. Aros, raios e pás recebem essa mesma matriz
-como pai, por isso giram juntos. A cena conta com iluminação dinâmica de Phong
-(componentes ambiente, difusa e especular) com materiais distintos para areia,
-terra, madeira, folhagem, conchas, pérolas e água, podendo ser alternada com `L`.
+como pai, por isso giram juntos. A cena conta com ciclo de dia e noite em que o Sol e a Lua percorrem o céu dentro do domo da ilha, alterando a direção e a cor da iluminação dinâmica de Phong (componentes ambiente, difusa e especular) e do céu ao longo do dia, pôr do sol e noite estrelada, podendo ser alternada com `L`.
 
 Referência para a câmera: [Sistema Solar, de fegemo](https://github.com/fegemo/ufci-cg-solar-system/blob/main/main.vanilla.js).
 Foi usada a ideia de definir a câmera por posição, alvo e vetor para cima
