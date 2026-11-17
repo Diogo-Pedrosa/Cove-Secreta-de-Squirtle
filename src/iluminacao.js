@@ -167,6 +167,9 @@ export function criarIluminacao(gl, programa) {
   return {
     atualizar,
     desenharCeu,
+    corCeu() {
+      return estadoAtual.corCeu;
+    },
     ativa() {
       return ativa;
     },

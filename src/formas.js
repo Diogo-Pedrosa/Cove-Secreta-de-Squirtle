@@ -219,6 +219,26 @@ export function criarFormas(gl, programa, iluminacao) {
     return criarMalha(faces, materiais.perola);
   }
 
+  function criarGomoBone() {
+    const faces = [];
+    function ponto(anel, parte) {
+      const altura = anel * Math.PI / 10;
+      const angulo = parte * Math.PI / 18;
+      return [.5 * Math.sin(altura) * Math.cos(angulo), .25 * Math.cos(altura), .5 * Math.sin(altura) * Math.sin(angulo)];
+    }
+    // Uma fatia de 60 graus do topo arredondado do boné.
+    for (let anel = 0; anel < 5; anel++) {
+      for (let i = 0; i < 6; i++) {
+        const a = ponto(anel, i);
+        const b = ponto(anel, i + 1);
+        const c = ponto(anel + 1, i + 1);
+        const d = ponto(anel + 1, i);
+        faces.push({ tom: 1, vertices: anel === 0 ? [a, c, d] : [a, b, c, d] });
+      }
+    }
+    return criarMalha(faces, materiais.plastico);
+  }
+
   return {
     cubo,
     cilindro: criarRedondo(0),
@@ -227,5 +247,6 @@ export function criarFormas(gl, programa, iluminacao) {
     esfera: criarEsfera(),
     folha,
     concha: criarConcha(),
+    gomoBone: criarGomoBone(),
   };
 }

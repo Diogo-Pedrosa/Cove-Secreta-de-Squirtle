@@ -1,5 +1,6 @@
 import { alturaOnda, inclinacaoOnda } from './ondas.js';
 import { obterBaseEspreguicadeira } from './cabana.js';
+import { criarBone } from './bone.js';
 import { multiplicar, transladar, escalar, girarX, girarY, girarZ } from './matrizes.js';
 
 export function criarTartaruga(formas) {
@@ -7,6 +8,7 @@ export function criarTartaruga(formas) {
   const azul = [.28, .75, .84];
   const barriga = [.96, .84, .54];
   const casco = [.52, .29, .14];
+  const bone = criarBone(formas);
 
   window.addEventListener('keydown', evento => {
     if (evento.key.toLowerCase() === 'p' && !evento.repeat) {
@@ -26,7 +28,7 @@ export function criarTartaruga(formas) {
     peca(formas.cubo, base, [0, -.18, -.8], [.08, .35, .35], [.16, .40, .49]);
   }
 
-  function desenharModelo(base, deitada = false) {
+  function desenharModelo(base, tempo, deitada = false) {
     const corpo = deitada ? base : multiplicar(base, girarX(-.12));
     peca(formas.esfera, corpo, [0, .9, 0], [.92, 1.12, .8], azul);
     peca(formas.esfera, corpo, [0, .93, -.28], [1.1, 1.2, .52], barriga);
@@ -37,7 +39,15 @@ export function criarTartaruga(formas) {
       peca(formas.cubo, corpo, [0, y, .44], [.53, .018, .025], [.74, .59, .34]);
     }
 
+    // A sunga envolve o quadril e acompanha a pose do corpo.
+    peca(formas.esfera, corpo, [0, .48, .015], [.88, .48, .85], [.87, .12, .18]);
+    peca(formas.esfera, corpo, [0, .66, .025], [.90, .12, .87], [1, .91, .75]);
+    peca(formas.esfera, corpo, [0, .49, .39], [.59, .40, .15], [.87, .12, .18]);
+    peca(formas.cubo, corpo, [-.06, .58, .47], [.025, .15, .025], [1, .96, .87], girarZ(-.3));
+    peca(formas.cubo, corpo, [.06, .58, .47], [.025, .15, .025], [1, .96, .87], girarZ(.3));
+
     peca(formas.esfera, corpo, [0, 1.7, .16], [1.25, 1.08, 1.1], azul);
+    bone.desenhar(corpo, tempo);
     for (const lado of [-1, 1]) {
       // Armação, lente e haste acompanham a transformação da cabeça.
       peca(formas.cubo, corpo, [lado * .28, 1.79, .68], [.5, .33, .10], [.04, .045, .055]);
@@ -77,22 +87,22 @@ export function criarTartaruga(formas) {
       ? multiplicar(transladar(0, .75, .95), girarX(-Math.PI / 2))
       : transladar(0, .13, 0);
     const tartaruga = multiplicar(prancha, postura);
-    desenharModelo(tartaruga, deitada);
+    desenharModelo(tartaruga, tempo, deitada);
   }
 
-  function desenharNaEspreguicadeira() {
+  function desenharNaEspreguicadeira(tempo) {
     const cadeira = obterBaseEspreguicadeira();
     const postura = multiplicar(
       transladar(0, .70, .48),
       multiplicar(girarX(-Math.PI / 2 + .22), escalar(.6, .6, .6))
     );
-    desenharModelo(multiplicar(cadeira, postura), true);
+    desenharModelo(multiplicar(cadeira, postura), tempo, true);
   }
 
   function desenhar(tempo) {
     if (pose === 0) desenharNoPrancha(tempo, false);
     else if (pose === 1) desenharNoPrancha(tempo, true);
-    else desenharNaEspreguicadeira();
+    else desenharNaEspreguicadeira(tempo);
   }
 
   return {

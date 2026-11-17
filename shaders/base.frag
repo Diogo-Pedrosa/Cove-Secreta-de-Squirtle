@@ -16,6 +16,8 @@ uniform vec3 corLuz;
 uniform vec3 corAmbiente;
 uniform vec3 posicaoCamera;
 uniform vec4 material;
+uniform bool usarNeblina;
+uniform vec3 corNeblina;
 
 in vec2 uv;
 in float profundidadeInterpolada;
@@ -57,6 +59,11 @@ void main() {
     }
 
     corFinal.rgb = corFinal.rgb * (ambiente * corAmbiente + difusa * corLuz) + especular * corLuz;
+  }
+  if (usarNeblina) {
+    float distancia = length(posicaoCamera - posicaoMundo);
+    float fator = smoothstep(10.0, 60.0, distancia) * 0.8;
+    corFinal.rgb = mix(corFinal.rgb, corNeblina, fator);
   }
 }
 

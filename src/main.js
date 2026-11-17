@@ -2,6 +2,7 @@ import { iniciarWebGL, ajustarTela, limparTela } from './webgl.js';
 import { carregarPrograma } from './shaders.js';
 import { criarCamera } from './camera.js';
 import { criarIluminacao } from './iluminacao.js';
+import { criarNeblina } from './neblina.js';
 import { criarChao } from './chao.js';
 import { criarFormas } from './formas.js';
 import { criarMoinho } from './moinho.js';
@@ -23,6 +24,7 @@ async function iniciar() {
     gl.useProgram(programa);
     const camera = criarCamera(gl, programa);
     const iluminacao = criarIluminacao(gl, programa);
+    const neblina = criarNeblina(gl, programa);
     const chao = criarChao(gl, programa);
     const formas = criarFormas(gl, programa, iluminacao);
     const texturaMadeira = criarTexturaMadeira(gl);
@@ -51,6 +53,7 @@ async function iniciar() {
       const tempo = agora / 1000;
       camera.atualizar();
       iluminacao.atualizar(tempo);
+      neblina.atualizar(iluminacao.corCeu());
       limparTela(gl);
       iluminacao.desenharCeu(tempo, formas, transladar, escalar, multiplicar);
       chao.desenhar();

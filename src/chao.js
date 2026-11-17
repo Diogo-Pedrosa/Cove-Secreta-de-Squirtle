@@ -96,6 +96,13 @@ export function criarChao(gl, programa) {
   }
 
   const vertices = new Float32Array(pontos);
+  let arames = false;
+  window.addEventListener('keydown', evento => {
+    if (evento.code === 'KeyF' && !evento.repeat) {
+      arames = !arames;
+      evento.preventDefault();
+    }
+  });
 
   const vao = gl.createVertexArray();
   gl.bindVertexArray(vao);
@@ -127,6 +134,16 @@ export function criarChao(gl, programa) {
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(coordenadas), gl.STATIC_DRAW);
   gl.enableVertexAttribArray(coordenadaTextura);
   gl.vertexAttribPointer(coordenadaTextura, 2, gl.FLOAT, false, 0, 0);
+
+  // Cada triângulo fornece três pares de índices para desenhar suas arestas.
+  const linhas = new Uint32Array(vertices.length / 3 * 2);
+  for (let i = 0, j = 0; i < vertices.length / 3; i += 3) {
+    linhas.set([i, i + 1, i + 1, i + 2, i + 2, i], j);
+    j += 6;
+  }
+  const bufferLinhas = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bufferLinhas);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, linhas, gl.STATIC_DRAW);
   gl.bindVertexArray(null);
 
   const cor = gl.getUniformLocation(programa, 'cor');
@@ -140,6 +157,14 @@ export function criarChao(gl, programa) {
   function desenhar() {
     gl.bindVertexArray(vao);
     gl.uniformMatrix4fv(modelo, false, matriz);
+    if (arames) {
+      gl.uniform1i(usarTextura, 0);
+      gl.uniform4fv(localMaterial, materiais.emissivo);
+      gl.uniform4f(cor, .18, .42, .39, 1);
+      gl.drawElements(gl.LINES, linhas.length, gl.UNSIGNED_INT, 0);
+      gl.bindVertexArray(null);
+      return;
+    }
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, textura);
     gl.uniform1i(texturaSuperficie, 0);
