@@ -1,5 +1,6 @@
 import { perspectiva, olharPara } from './matrizes.js';
 import { criarMouse } from './mouse.js';
+import { criarTeclado } from './teclado.js';
 
 export function criarCamera(gl, programa) {
   const localProjecao = gl.getUniformLocation(programa, 'projecao');
@@ -13,23 +14,35 @@ export function criarCamera(gl, programa) {
   let anguloOrbital = .64;
   let inclinacaoOrbital = Math.PI / 4;
   let tempoAtual = 0;
+  let anterior = null;
+  const teclas = criarTeclado(ativarOrbital);
+
+  function ativarOrbital() {
+    if (modo === 1) {
+      anguloOrbital = .64 + tempoAtual * .15;
+      inclinacaoOrbital = Math.PI / 4;
+      modo = 2;
+    }
+  }
 
   window.addEventListener('keydown', evento => {
     if (evento.key === '1' || evento.key === '2') {
       const proximoModo = Number(evento.key);
-      if (proximoModo === 2 && modo === 1) {
-        anguloOrbital = .64 + tempoAtual * .15;
-        inclinacaoOrbital = Math.PI / 4;
-      }
+      if (proximoModo === 2) ativarOrbital();
       modo = proximoModo;
     }
   });
 
   function atualizar() {
     const tempo = performance.now() / 1000;
+    const dt = anterior === null ? 0 : Math.min(tempo - anterior, .05);
+    anterior = tempo;
     tempoAtual = tempo;
     const movimento = mouse.ler();
-    distancia = Math.max(8, Math.min(55, distancia + movimento.zoom * .02));
+    const zoom = Number(teclas.KeyS) - Number(teclas.KeyW);
+    const giro = Number(teclas.KeyD) - Number(teclas.KeyA);
+    if (zoom || giro) ativarOrbital();
+    distancia = Math.max(8, Math.min(55, distancia + movimento.zoom * .02 + zoom * dt * 12));
 
     let angulo;
     let inclinacao;
@@ -37,7 +50,7 @@ export function criarCamera(gl, programa) {
       angulo = .64 + tempo * .15;
       inclinacao = Math.PI / 4;
     } else {
-      anguloOrbital -= movimento.giro * .005;
+      anguloOrbital += giro * dt * 1.2 - movimento.giro * .005;
       inclinacaoOrbital = Math.max(.12, Math.min(
         Math.PI / 2 - .02,
         inclinacaoOrbital + movimento.inclinacao * .005

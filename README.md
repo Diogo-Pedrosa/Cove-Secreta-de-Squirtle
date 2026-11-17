@@ -6,7 +6,8 @@ sem frameworks ou bibliotecas gráficas.
 
 Por enquanto, a cena tem um chão circular com cor de areia, uma câmera aérea
 com perspectiva e um moinho d'água no centro. A roda e as pás giram no eixo X.
-Ainda não há texturas.
+A areia usa uma textura procedural. As peças de madeira do moinho também
+recebem uma textura procedural com veios e juntas entre tábuas.
 
 A ilha tem areia no topo plano e uma meia esfera de terra embaixo, formada
 por 16 anéis que diminuem até fechar no fundo. O raio e a profundidade sãoç
@@ -27,6 +28,8 @@ Controles:
 - `L`: ativar/desativar a iluminação dinâmica (modelo de Phong).
 - Arrastar com o botão esquerdo (na câmera `2`): girar ao redor do moinho e mudar a inclinação.
 - Rodinha do mouse: aproximar e afastar.
+- `W` / `S`: aproximar e afastar a câmera.
+- `A` / `D`: girar ao redor da ilha. WASD ativa o modo orbital manual.
 
 O mouse usa o deslocamento em pixels. A distância fica entre 8 e 55 e a inclinação não passa por baixo
 do chão nem vira a câmera de cabeça para baixo.
@@ -44,6 +47,8 @@ Arquivos:
 - `src/squirtle.js`: personagem, prancha e animação de surf.
 - `src/camera.js`: câmera orbital e limites de distância e inclinação.
 - `src/mouse.js`: arraste, captura do ponteiro e rodinha do mouse.
+- `src/teclado.js`: estado das teclas WASD e liberação ao perder o foco.
+- `src/texturas.js`: geração da textura de madeira do moinho.
 - `src/matrizes.js`: contas de perspectiva e visão, sem biblioteca externa.
 - `src/formas.js`: cubo, cilindro, aro, telhado e esfera reutilizáveis.
 - `src/moinho.js`: montagem do moinho e hierarquia da roda.

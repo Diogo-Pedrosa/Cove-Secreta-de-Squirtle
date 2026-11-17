@@ -1,7 +1,6 @@
 import { alturaOnda, inclinacaoOnda } from './ondas.js';
-import { alturaAreia } from './terreno.js';
+import { obterBaseEspreguicadeira } from './cabana.js';
 import { multiplicar, transladar, escalar, girarX, girarY, girarZ } from './matrizes.js';
-import { materiais } from './iluminacao.js';
 
 export function criarTartaruga(formas) {
   let pose = 0;
@@ -27,8 +26,8 @@ export function criarTartaruga(formas) {
     peca(formas.cubo, base, [0, -.18, -.8], [.08, .35, .35], [.16, .40, .49]);
   }
 
-  function desenharModelo(base, incluirAcessorio = false) {
-    const corpo = multiplicar(base, girarX(-.12));
+  function desenharModelo(base, deitada = false) {
+    const corpo = deitada ? base : multiplicar(base, girarX(-.12));
     peca(formas.esfera, corpo, [0, .9, 0], [.92, 1.12, .8], azul);
     peca(formas.esfera, corpo, [0, .93, -.28], [1.1, 1.2, .52], barriga);
     peca(formas.esfera, corpo, [0, .95, -.39], [.94, 1.02, .46], casco);
@@ -40,45 +39,23 @@ export function criarTartaruga(formas) {
 
     peca(formas.esfera, corpo, [0, 1.7, .16], [1.25, 1.08, 1.1], azul);
     for (const lado of [-1, 1]) {
-      peca(formas.esfera, corpo, [lado * .28, 1.77, .66], [.22, .36, .10], [.9, .04, .06]);
-      peca(formas.esfera, corpo, [lado * .28 - .025, 1.85, .71], [.07, .11, .035], [1, 1, 1]);
-      peca(formas.esfera, corpo, [lado * .33, .26, .12], [.42, .3, .64], azul);
-      const braco = multiplicar(corpo, girarZ(lado * -.22));
-      peca(formas.esfera, braco, [lado * .7, 1, .05], [.7, .3, .35], azul);
-      if (incluirAcessorio && lado === 1) {
-        const acessorio = multiplicar(
-          multiplicar(braco, transladar(.96, 1.03, .19)),
-          multiplicar(girarZ(.35), escalar(1.8, 1.6, 1.6))
-        );
-        peca(formas.cilindro, acessorio, [0, 0, 0], [.13, .034, .034], [.76, .68, .50]);
-        for (let i = 0; i < 9; i++) {
-          const raio = .039 + i * .003;
-          const tom = i % 2 === 0 ? [.89, .85, .69] : [.85, .81, .65];
-          peca(formas.cilindro, acessorio, [.09 + i * .045, .002 * Math.sin(i * 2), 0],
-            [.05, raio, raio * .94], tom);
-        }
-        peca(formas.cilindro, acessorio, [.49, 0, 0], [.035, .063, .059], [.30, .25, .20]);
-        peca(formas.cilindro, acessorio, [.512, 0, 0], [.018, .056, .052], [.95, .25, .045]);
-        const ponta = multiplicar(acessorio, girarZ(.12));
-        peca(formas.esfera, ponta, [.54, -.06, 0], [.075, .04, .035], [.49, .43, .33]);
-      }
+      // Armação, lente e haste acompanham a transformação da cabeça.
+      peca(formas.cubo, corpo, [lado * .28, 1.79, .68], [.5, .33, .10], [.04, .045, .055]);
+      peca(formas.cubo, corpo, [lado * .28, 1.79, .738], [.40, .23, .025], [.04, .14, .20]);
+      peca(formas.cubo, corpo, [lado * .34, 1.86, .755], [.17, .025, .012], [.36, .65, .72], girarZ(.25));
+      peca(formas.cubo, corpo, [lado * .53, 1.84, .39], [.055, .065, .62], [.04, .045, .055]);
+      peca(formas.esfera, corpo, [lado * .33, .26, deitada ? -.2 : .12], [.42, .3, .64], azul);
+      const braco = multiplicar(corpo, girarZ(deitada ? 0 : lado * -.22));
+      peca(formas.esfera, braco, [lado * .7, 1, deitada ? -.4 : .05], [.7, .3, .35], azul);
     }
+    peca(formas.cubo, corpo, [0, 1.82, .71], [.15, .065, .08], [.04, .045, .055]);
     peca(formas.esfera, corpo, [0, 1.48, .68], [.27, .045, .04], [.17, .07, .14]);
-    peca(formas.esfera, corpo, [.15, .55, -.66], [.36, .35, .75], azul);
-    peca(formas.esfera, corpo, [.33, .68, -.95], [.52, .56, .35], azul);
-    peca(formas.esfera, corpo, [.33, .73, -1.13], [.23, .25, .04], [.16, .53, .65]);
-  }
-
-  function desenharGarrafa(base) {
-    const corpo = multiplicar(base, girarX(-.12));
-    const braco = multiplicar(corpo, girarZ(-.22));
-    const garrafa = multiplicar(
-      multiplicar(braco, transladar(.96, 1.03, .19)),
-      girarZ(.35)
-    );
-    peca(formas.cilindro, garrafa, [0, 0, 0], [.32, .105, .105], [.08, .58, .22], null, materiais.perola);
-    peca(formas.cilindro, garrafa, [.22, 0, 0], [.13, .055, .055], [.10, .67, .27], null, materiais.perola);
-    peca(formas.cilindro, garrafa, [.32, 0, 0], [.065, .06, .06], [.78, .76, .64]);
+    // Nas poses de descanso a cauda fica oculta para caber sobre o apoio.
+    if (!deitada) {
+      peca(formas.esfera, corpo, [.15, .55, -.66], [.36, .35, .75], azul);
+      peca(formas.esfera, corpo, [.33, .68, -.95], [.52, .56, .35], azul);
+      peca(formas.esfera, corpo, [.33, .73, -1.13], [.23, .25, .04], [.16, .53, .65]);
+    }
   }
 
   function basePrancha(tempo) {
@@ -97,25 +74,19 @@ export function criarTartaruga(formas) {
     const prancha = basePrancha(tempo);
     desenharPrancha(prancha);
     const postura = deitada
-      ? multiplicar(transladar(0, 1.05, 0), girarX(-Math.PI / 2))
+      ? multiplicar(transladar(0, .75, .95), girarX(-Math.PI / 2))
       : transladar(0, .13, 0);
     const tartaruga = multiplicar(prancha, postura);
-    desenharModelo(tartaruga, !deitada);
-    if (deitada) desenharGarrafa(tartaruga);
+    desenharModelo(tartaruga, deitada);
   }
 
   function desenharNaEspreguicadeira() {
-    const x = 6.8;
-    const z = .6;
-    const cadeira = multiplicar(
-      transladar(x, alturaAreia(x, z) + .04, z),
-      girarY(-.2)
-    );
+    const cadeira = obterBaseEspreguicadeira();
     const postura = multiplicar(
-      transladar(0, .58, -.32),
-      multiplicar(girarX(-Math.PI / 2), escalar(.5, .5, .5))
+      transladar(0, .70, .48),
+      multiplicar(girarX(-Math.PI / 2 + .22), escalar(.6, .6, .6))
     );
-    desenharModelo(multiplicar(cadeira, postura));
+    desenharModelo(multiplicar(cadeira, postura), true);
   }
 
   function desenhar(tempo) {

@@ -5,10 +5,7 @@ export function criarCabana(formas) {
   const cabana = criarEstrutura(formas);
   const espreguicadeira = criarEspreguicadeira(formas);
   const cabanaBase = transladar(5.8, alturaAreia(5.8, -.7) + .04, -.7);
-  const cadeiraBase = multiplicar(
-    transladar(6.8, alturaAreia(6.8, .6) + .04, .6),
-    girarY(-.2)
-  );
+  const cadeiraBase = obterBaseEspreguicadeira();
 
   function desenhar() {
     cabana.desenhar(cabanaBase);
@@ -16,6 +13,15 @@ export function criarCabana(formas) {
   }
 
   return { desenhar };
+}
+
+export function obterBaseEspreguicadeira() {
+  const x = 5.8;
+  const z = .65;
+  return multiplicar(
+    transladar(x, alturaAreia(x, z) + .04, z),
+    girarY(-.2)
+  );
 }
 
 function criarEstrutura(formas) {

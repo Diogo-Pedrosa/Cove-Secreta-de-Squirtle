@@ -132,6 +132,7 @@ export function criarChao(gl, programa) {
   const cor = gl.getUniformLocation(programa, 'cor');
   const modelo = gl.getUniformLocation(programa, 'modelo');
   const usarTextura = gl.getUniformLocation(programa, 'usarTextura');
+  const texturaSuperficie = gl.getUniformLocation(programa, 'texturaSuperficie');
   const localMaterial = gl.getUniformLocation(programa, 'material');
   const textura = criarTexturaAreia(gl);
   const matriz = identidade();
@@ -141,6 +142,7 @@ export function criarChao(gl, programa) {
     gl.uniformMatrix4fv(modelo, false, matriz);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, textura);
+    gl.uniform1i(texturaSuperficie, 0);
     gl.uniform1i(usarTextura, 1);
     gl.uniform4fv(localMaterial, materiais.areia);
     gl.uniform4f(cor, 0.89, 0.80, 0.58, 1.0);

@@ -5,6 +5,7 @@ import { criarIluminacao } from './iluminacao.js';
 import { criarChao } from './chao.js';
 import { criarFormas } from './formas.js';
 import { criarMoinho } from './moinho.js';
+import { criarTexturaMadeira } from './texturas.js';
 import { criarPraia } from './praia.js';
 import { criarTartaruga } from './tartaruga.js';
 import { criarPalmeiras } from './palmeira.js';
@@ -24,7 +25,8 @@ async function iniciar() {
     const iluminacao = criarIluminacao(gl, programa);
     const chao = criarChao(gl, programa);
     const formas = criarFormas(gl, programa, iluminacao);
-    const moinho = criarMoinho(formas);
+    const texturaMadeira = criarTexturaMadeira(gl);
+    const moinho = criarMoinho(formas, texturaMadeira);
     const praia = criarPraia(gl, programa);
     const tartaruga = criarTartaruga(formas);
     const palmeiras = criarPalmeiras(formas);

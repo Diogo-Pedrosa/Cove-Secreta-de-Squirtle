@@ -4,8 +4,9 @@ precision highp float;
 out vec4 corFinal;
 
 uniform vec4 cor;
-uniform sampler2D texturaAreia;
+uniform sampler2D texturaSuperficie;
 uniform bool usarTextura;
+uniform bool usarMadeira;
 uniform bool usarProfundidade;
 uniform float profundidadeMaxima;
 uniform float tempoAgua;
@@ -24,8 +25,9 @@ in vec3 normalMundo;
 void main() {
   corFinal = cor;
   if (usarTextura) {
-    float grao = texture(texturaAreia, uv).r;
-    corFinal.rgb *= 0.78 + 0.44 * grao;
+    float grao = texture(texturaSuperficie, uv).r;
+    float detalhe = usarMadeira ? mix(0.48, 1.28, grao) : 0.78 + 0.44 * grao;
+    corFinal.rgb *= detalhe;
   }
   if (usarProfundidade) {
     float profundidade = clamp(profundidadeInterpolada / profundidadeMaxima, 0.0, 1.0);

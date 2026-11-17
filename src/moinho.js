@@ -1,14 +1,15 @@
 import { identidade, multiplicar, transladar, escalar, girarX } from './matrizes.js';
 import { materiais } from './iluminacao.js';
 
-export function criarMoinho(formas) {
+export function criarMoinho(formas, texturaMadeira) {
   const madeira = [.55, .32, .16];
   const clara = [.72, .48, .26];
   const escura = [.30, .18, .10];
 
   function peca(forma, pai, lugar, tamanho, cor, material = materiais.madeira) {
     const local = multiplicar(transladar(...lugar), escalar(...tamanho));
-    forma(multiplicar(pai, local), cor, material);
+    const textura = material === materiais.madeira ? texturaMadeira : null;
+    forma(multiplicar(pai, local), cor, material, textura);
   }
 
   function desenhar(tempo) {

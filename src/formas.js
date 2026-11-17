@@ -18,6 +18,10 @@ function normalTriangulo(a, b, c) {
 export function criarFormas(gl, programa, iluminacao) {
   const posicao = gl.getAttribLocation(programa, 'posicao');
   const normal = gl.getAttribLocation(programa, 'normal');
+  const coordenadaTextura = gl.getAttribLocation(programa, 'coordenadaTextura');
+  const usarTextura = gl.getUniformLocation(programa, 'usarTextura');
+  const usarMadeira = gl.getUniformLocation(programa, 'usarMadeira');
+  const texturaSuperficie = gl.getUniformLocation(programa, 'texturaSuperficie');
   const modelo = gl.getUniformLocation(programa, 'modelo');
   const cor = gl.getUniformLocation(programa, 'cor');
   const localMaterial = gl.getUniformLocation(programa, 'material');
@@ -25,6 +29,7 @@ export function criarFormas(gl, programa, iluminacao) {
   function criarMalha(faces, materialPadrao = materiais.padrao) {
     const pontos = [];
     const normais = [];
+    const coordenadas = [];
     const partes = [];
 
     for (const { vertices, tom } of faces) {
@@ -37,6 +42,16 @@ export function criarFormas(gl, programa, iluminacao) {
         const n = normalTriangulo(a, b, c);
         pontos.push(...a, ...b, ...c);
         normais.push(...n, ...n, ...n);
+        // Projeta a textura nos dois eixos que acompanham a face.
+        for (const p of [a, b, c]) {
+          if (Math.abs(n[0]) > Math.abs(n[1]) && Math.abs(n[0]) > Math.abs(n[2])) {
+            coordenadas.push(p[2] + .5, p[1] + .5);
+          } else if (Math.abs(n[1]) > Math.abs(n[2])) {
+            coordenadas.push(p[0] + .5, p[2] + .5);
+          } else {
+            coordenadas.push(p[0] + .5, p[1] + .5);
+          }
+        }
       }
       partes.push({ inicio, quantidade: pontos.length / 3 - inicio, tom });
     }
@@ -56,20 +71,37 @@ export function criarFormas(gl, programa, iluminacao) {
       gl.enableVertexAttribArray(normal);
       gl.vertexAttribPointer(normal, 3, gl.FLOAT, false, 0, 0);
     }
+    const bufferTextura = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferTextura);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(coordenadas), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(coordenadaTextura);
+    gl.vertexAttribPointer(coordenadaTextura, 2, gl.FLOAT, false, 0, 0);
     gl.bindVertexArray(null);
 
-    function desenhar(matriz, tinta, material = materialPadrao) {
+    function desenhar(matriz, tinta, material = materialPadrao, textura = null) {
       const iluminada = iluminacao ? iluminacao.ativa() : true;
       const emissivo = material === materiais.emissivo;
       gl.bindVertexArray(vao);
       gl.uniformMatrix4fv(modelo, false, matriz);
       gl.uniform4fv(localMaterial, material);
+      gl.uniform1i(usarTextura, textura ? 1 : 0);
+      gl.uniform1i(usarMadeira, textura ? 1 : 0);
+      if (textura) {
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, textura);
+        gl.uniform1i(texturaSuperficie, 0);
+      }
       for (const parte of partes) {
         const fator = (iluminada || emissivo) ? 1 : parte.tom;
         gl.uniform4f(cor, tinta[0] * fator, tinta[1] * fator, tinta[2] * fator, 1);
         gl.drawArrays(gl.TRIANGLES, parte.inicio, parte.quantidade);
       }
       gl.bindVertexArray(null);
+      if (textura) {
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        gl.uniform1i(usarTextura, 0);
+        gl.uniform1i(usarMadeira, 0);
+      }
     }
 
     return desenhar;
